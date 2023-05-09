@@ -11,14 +11,14 @@
       integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
       crossorigin="anonymous"
     />
-    <title>COMP 2537 Assignment 2</title>
   </head>
-  <body style="margin-top: 160px">
+  <body>
     <main class="form-signin w-25 m-auto">
       <h1>Users</h1>
       <br />
-      <% let i=0; %> <% for(i=0; i < users.length; i++) { %> <%-
-      include('templates/user', {user: users[i]},) %> <% } %>
+      <% let i=0; %> 
+      <% for(i=0; i < users.length; i++) { %> 
+      <%- include('templates/user', {user: users[i]},) %> <% } %>
     </main>
   </body>
 </html>

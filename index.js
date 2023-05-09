@@ -84,14 +84,11 @@ function adminAuthorization(req, res, next) {
 }
 
 app.get('/', (req,res) => {
-    if (req.session.username) {
-		const nature = req.query.nature;
-		res.render("members", {
-		  username: req.session.username,
-		});
-	  } else {
-		res.render("index");
-	  }
+    data = {
+		session: req.session,
+		username: req.session.username
+	}
+    res.render("index", data);
 });
 
 app.get('/nosql-injection', async (req,res) => {
@@ -124,19 +121,18 @@ app.get('/nosql-injection', async (req,res) => {
     res.send(`<h1>Hello ${username}</h1>`);
 });
 
-app.get('/members', (req,res) => {
-    if (!req.session.authenticated) {
-        console.log("User is not logged in!");
-        res.redirect("/");
-    }
-    res.render("members", {
-        username: req.session.username
-    });
+app.get('/members', function (req,res) {
+    if (req.session.username) {
+		const cat = req.query.cat;
+		res.render("members", { images: images, username: req.session.username, cat: cat });
+	  } else {
+		res.redirect("/");
+	  }
 });
 
 app.post("/members", async (req, res) => {
 	const username = req.session.username;
-	res.render("members", { username: username});
+	res.render("members", { username: username, images: images});
   });
 
 app.get('/about', (req,res) => {
@@ -178,7 +174,7 @@ app.post('/submitUser', async (req,res) => {
 	const schema = Joi.object(
 		{
 			username: Joi.string().alphanum().max(20).required(),
-			password: Joi.string().max(20).required()
+			password: Joi.string().max(20).required(),
 		});
 	
 	const validationResult = schema.validate({username, password});
@@ -205,7 +201,7 @@ app.post('/loggingin', async (req,res) => {
 	const validationResult = schema.validate(username);
 	if (validationResult.error != null) {
 	   console.log(validationResult.error);
-	   res.render("errorMessage", { error: "Invalid Input" });
+	   res.redirect("/login");
 	   return;
 	}
 
@@ -217,7 +213,7 @@ app.post('/loggingin', async (req,res) => {
 		res.render("errorMessage", { error: "User not found" });
 		return;
 	}
-	if (await bcrypt.compare(password, result[0].password)) {
+	else if (await bcrypt.compare(password, result[0].password)) {
 		console.log("correct password");
 		req.session.authenticated = true;
 		req.session.username = username;
@@ -229,8 +225,7 @@ app.post('/loggingin', async (req,res) => {
 	}
 	else {
 		console.log("incorrect password");
-		res.render("errorMessage", {error: "Incorrect password."});
-		return;
+		res.render("loggingin",{result:result});
 	}
 });
 
@@ -265,23 +260,18 @@ app.get('/admin', sessionValidation, adminAuthorization, async (req,res) => {
     res.render("admin", {users: result});
 });
 
-app.post("/admin/promote", async (req, res) => {
-	const { userId } = req.body;
-	await userCollection.updateOne(
-	  { _id: ObjectId(userId) },
-	  { $set: { user_type: "admin" } }
-	);
-	res.redirect("/admin");
-  });
+app.post('/promote', async (req,res) => {
+	var username = req.body.username;
 
-  app.post("/admin/demote", async (req, res) => {
-	const { userId } = req.body;
-	await userCollection.updateOne(
-	  { _id: ObjectId(userId) },
-	  { $set: { user_type: "user" } }
-	);
-	res.redirect("/admin");
-  });
+	await userCollecstion.updateOne({username: username}, {$set: {user_type: 'admin'}});
+	res.redirect('/admin');
+});
+app.post('/demote', async (req,res) => {
+	var username = req.body.username;
+
+	await userCollection.updateOne({username: username}, {$set: {user_type: 'user'}});
+	res.redirect('/admin');
+});
 
 app.use(express.static(__dirname + "/public"));
 
@@ -292,4 +282,4 @@ app.get("*", (req,res) => {
 
 app.listen(port, () => {
 	console.log("Node application listening on port "+port);
-}); 
+});
