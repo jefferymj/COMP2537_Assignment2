@@ -1,0 +1,33 @@
+<%- include("templates/header") %>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Members Area</title>
+  </head>
+  <body class="text-center" style="margin-top: 160px">
+    <main class="form-signin w-25 m-auto">
+      <h1>Hello, <%= username %>!</h1>
+      <div class="row" style="margin-bottom: 24px">
+        <div class="col">
+          <img src="/public\fluffy.gif" class="img-fluid" />
+        </div>
+        <div class="col">
+          <img src="/public\socks.gif'" class="img-fluid" />
+        </div>
+      </div>
+      <button
+        onclick="window.location.href='/admin'"
+        class="btn btn-primary d-inline-flex align-items-center"
+      >
+        Go to Admin Area
+      </button>
+      <button
+        onclick="window.location.href='/logout'"
+        class="btn btn-primary d-inline-flex align-items-center"
+      >
+        Log out
+      </button>
+    </main>
+  </body>
+</html>
+<%- include("templates/footer") %>

@@ -1,0 +1,18 @@
+<%- include("templates/header") %> 
+    <% if (authenticated) { %>
+        <h3>Hello, <%= (user) %></h3>
+        <form action='/members' method='get'>
+            <button>Members</button>
+        </form>
+        <form action='/logout' method='get'>
+            <button>Log Out</button>
+        </form>
+    <% } else { %>
+        <form action='/signup' method='get'>
+            <button>Sign Up</button>
+        </form>
+        <form action='/login' method='get'>
+            <button>Login</button>
+        </form>
+    <% } %>
+<%- include("templates/footer") %> 

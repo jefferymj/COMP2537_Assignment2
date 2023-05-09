@@ -1,7 +1,7 @@
-
 require("./utils.js");
 
 require('dotenv').config();
+
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -14,7 +14,6 @@ const app = express();
 
 const Joi = require("joi");
 
-
 const expireTime = 24 * 60 * 60 * 1000; //expires after 1 day  (hours * minutes * seconds * millis)
 
 /* secret information section */
@@ -23,7 +22,6 @@ const mongodb_user = process.env.MONGODB_USER;
 const mongodb_password = process.env.MONGODB_PASSWORD;
 const mongodb_database = process.env.MONGODB_DATABASE;
 const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
-
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 /* END secret section */
 
@@ -86,7 +84,14 @@ function adminAuthorization(req, res, next) {
 }
 
 app.get('/', (req,res) => {
-    res.render("index");
+    if (req.session.username) {
+		const nature = req.query.nature;
+		res.render("members", {
+		  username: req.session.username,
+		});
+	  } else {
+		res.render("index");
+	  }
 });
 
 app.get('/nosql-injection', async (req,res) => {
@@ -118,6 +123,21 @@ app.get('/nosql-injection', async (req,res) => {
 
     res.send(`<h1>Hello ${username}</h1>`);
 });
+
+app.get('/members', (req,res) => {
+    if (!req.session.authenticated) {
+        console.log("User is not logged in!");
+        res.redirect("/");
+    }
+    res.render("members", {
+        username: req.session.username
+    });
+});
+
+app.post("/members", async (req, res) => {
+	const username = req.session.username;
+	res.render("members", { username: username});
+  });
 
 app.get('/about', (req,res) => {
     var color = req.query.color;
@@ -164,7 +184,7 @@ app.post('/submitUser', async (req,res) => {
 	const validationResult = schema.validate({username, password});
 	if (validationResult.error != null) {
 	   console.log(validationResult.error);
-	   res.redirect("/createUser");
+	   res.render("errorMessage", { error: "Invalid Input" });
 	   return;
    }
 
@@ -174,7 +194,7 @@ app.post('/submitUser', async (req,res) => {
 	console.log("Inserted user");
 
     var html = "successfully created user";
-    res.render("submitUser", {html: html});
+    res.redirect("/members");
 });
 
 app.post('/loggingin', async (req,res) => {
@@ -185,7 +205,7 @@ app.post('/loggingin', async (req,res) => {
 	const validationResult = schema.validate(username);
 	if (validationResult.error != null) {
 	   console.log(validationResult.error);
-	   res.redirect("/login");
+	   res.render("errorMessage", { error: "Invalid Input" });
 	   return;
 	}
 
@@ -194,7 +214,7 @@ app.post('/loggingin', async (req,res) => {
 	console.log(result);
 	if (result.length != 1) {
 		console.log("user not found");
-		res.redirect("/login");
+		res.render("errorMessage", { error: "User not found" });
 		return;
 	}
 	if (await bcrypt.compare(password, result[0].password)) {
@@ -204,17 +224,18 @@ app.post('/loggingin', async (req,res) => {
         req.session.user_type = result[0].user_type;
 		req.session.cookie.maxAge = expireTime;
 
-		res.redirect('/loggedIn');
+		res.redirect('/members');
 		return;
 	}
 	else {
 		console.log("incorrect password");
-		res.redirect("/login");
+		res.render("errorMessage", {error: "Incorrect password."});
 		return;
 	}
 });
 
 app.use('/loggedin', sessionValidation);
+
 app.get('/loggedin', (req,res) => {
     if (!req.session.authenticated) {
         res.redirect('/login');
@@ -231,7 +252,6 @@ app.get('/logout', (req,res) => {
     res.render("loggedout");
 });
 
-
 app.get('/cat/:id', (req,res) => {
     var cat = req.params.id;
 
@@ -244,6 +264,24 @@ app.get('/admin', sessionValidation, adminAuthorization, async (req,res) => {
  
     res.render("admin", {users: result});
 });
+
+app.post("/admin/promote", async (req, res) => {
+	const { userId } = req.body;
+	await userCollection.updateOne(
+	  { _id: ObjectId(userId) },
+	  { $set: { user_type: "admin" } }
+	);
+	res.redirect("/admin");
+  });
+
+  app.post("/admin/demote", async (req, res) => {
+	const { userId } = req.body;
+	await userCollection.updateOne(
+	  { _id: ObjectId(userId) },
+	  { $set: { user_type: "user" } }
+	);
+	res.redirect("/admin");
+  });
 
 app.use(express.static(__dirname + "/public"));
 
