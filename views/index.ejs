@@ -1,26 +1,28 @@
-<%- include("templates/header") %>
-<!DOCTYPE html>
-<html lang="en">
-  </head>
-  <body class="text-center" style="margin-top: 180px">
-    <main class="form-signin w-25 m-auto">
-      <h1 class="h3 mb-3 fw-normal">Create an account or log in</h1>
-      <div class="d-flex gap-2 justify-content-center py-2">
-        <button
-          onclick="window.location.href='createUser'"
-          class="btn btn-primary d-inline-flex align-items-center"
-          type="button">
-          Sign up
-        </button>
-        <button
-          onclick="window.location.href='login'"
-          class="btn btn-primary d-inline-flex align-items-center"
-          type="button"
-        >
-          Log in
-        </button>
-      </div>
-    </main>
-  </body>
-</html>
-<%- include("templates/footer") %>
+<%- include("templates/header") %> <% if (!session.authenticated) { %>
+<div class="con">
+  <form action="/signup" method="get" style="margin-right: 10px;">
+    <button class="btn btn-primary">Sign Up</button>
+
+  </form>
+
+  <form action="/login" method="get">
+    <button class="btn btn-primary">Log in</button>
+
+  </form>
+</div>
+
+<% } else { %>
+
+<div class="con conCol">
+  <p>hello <%= session.username %>!</p>
+  <form action="/members" method="get">
+    <button class="btn btn-primary">Go to members area</button>
+
+  </form>
+  <hr />
+  <form action="/logout" method="get">
+    <button class="btn btn-primary">Log out</button>
+
+  </form>
+</div>
+<% } %> <%- include("templates/footer") %>

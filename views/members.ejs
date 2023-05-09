@@ -1,31 +1,24 @@
 <%- include("templates/header") %>
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Members Area</title>
-  </head>
-  <body class="text-center" style="margin-top: 160px">
-    <main class="form-signin w-25 m-auto">
-      <h1>Hello, <%= username %>!</h1>
-      <div class="row" style="margin-bottom: 24px">
-        <div class="col">
-          <img src="/fluffy.gif" class="img-fluid" />
-        </div>
-        <div class="col">
-          <img src="/socks.gif" class="img-fluid" />
-        </div>
+
+<p> Hello <h2><%= session.username %></h2></p>
+
+
+<div class="container text-center">
+    <div class="row">
+        <div class="col-sm"><img src='/fluffy.gif' class="rounded mx-auto d-block" style='width:250px;'></div>
+        <div class="col-sm"><img src='/socks.gif' class="rounded mx-auto d-block" style='width:250px;'></div>
+        <div class="col-sm"><img src='/study.gif' class="rounded mx-auto d-block" style='width:250px;'></div>
       </div>
-      <button
-        onclick="window.location.href='/admin'"
-        class="btn btn-primary d-inline-flex align-items-center">
-        Go to Admin Area
-      </button>
-      <button
-        onclick="window.location.href='/logout'"
-        class="btn btn-primary d-inline-flex align-items-center">
-        Log out
-      </button>
-    </main>
-  </body>
-</html>
+  </div>
+
+  <hr>
+
+  <form action='/logout' method='get'>
+    <button class="btn btn-primary">Log Out</button>
+
+    </form>
+
+
+</div>
+
 <%- include("templates/footer") %>
